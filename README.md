@@ -13,6 +13,20 @@ One solution method is to check the presence of existing entries in rows, column
 
 My program uses the first method, and if no solution can be found, invokes the second method to converge to a solution. 
 
+### How It Works
+
+The program reads in a .csv file with 9 rows and 9 columns, with zeros representing blank entries. The output, if there are no errors, is a .csv file with blank entries filled in. 
+
+The sudoku matrix is stored as a matrix of lists. Filled entries have lists with only one component. Blank entries have longer lists containing all possibilities that have not been ruled out yet. Because the entries are lists, it is easy to tell if a matrix is fully reduced (solved): all of its lists are length one, and the sum of all lengths would be 81. That is the "id done?" test used throughout. 
+
+The program uses functional programming style. I chose that style over object-oriented just because I'm a little more comfortable with it - I'm relatively new to Python. The program employs the two algorithms mentioned in the Background section: row/column/sub9 reduction and hypothesis testing. As a first pass, it tries row/column/sub9 reduction, making sure to keep row/column/sub9 values distinct. If that works, the program ends. 
+
+If the sudoku is unsolved after the first pass, the hypothesis function carries out hypothesis testing. It looks for the first instance of an unreduced list, and tests reducing it to its first element. If a solution results, the program ends. If the hypothesis is bad and results in over-reduction (lists of length zero) or duplicated entries, the hypothesis is removed and then hypothesis calls itself on the reduced sudoku matrix. 
+
+If the hypothesis is neither a clear solution nor a failure, hypothesis calls itself and keeps going until there is a solution or failure. 
+
+This program works on easy and medium difficulty sudoku puzzles. It was not able to solve a difficult sudoku puzzle. 
+
 
 
 
