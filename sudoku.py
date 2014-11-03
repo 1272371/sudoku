@@ -4,8 +4,10 @@ import sys
 import csv
 
 def read_csv_file(filename):
-    # Reads in unsolved sudoku from .csv file.
-    # Formats the entries as a 9x9 matrix of lists.
+    """
+    Reads in unsolved sudoku from .csv file.
+    Formats the entries as a 9x9 matrix of lists.
+    """
     matrix = []
     with file(filename, 'U') as fileHandle:
         csvReader = csv.reader(fileHandle, delimiter=',', quotechar='"')
@@ -18,7 +20,6 @@ def sum_list_lengths(matrix):
     """
     Computes the sum of the lengths of the 81 lists in the
     working sudoku. If the length is 81, all lists are length 1.
-    :rtype : int
     """
     a = [[len(row[i]) for i in range(9)]for row in matrix]
     sumcollect = 0
@@ -29,8 +30,10 @@ def sum_list_lengths(matrix):
 
 
 def zero_worker(work_list):
-    # Converts zero entries in initial sudoku matrix to lists of
-    # possibilities, from 1 through 9.
+    """
+    Converts zero entries in initial sudoku matrix to lists of
+    possibilities, from 1 through 9.
+    """
     result = [[row[i]] if row[i] != 0 else range(1, 10) for row in work_list for i in range(9)]
     result = [result[9*x:9*x + 9] for x in range(9)]
     if sum_list_lengths(result) > 81:
@@ -40,8 +43,10 @@ def zero_worker(work_list):
 
 
 def row_reducer(matrix):
-    # Reduces possibilities within rows according to the presence of values in rows.
-    # Tests for over-reduction (an entry reduced to an empty list), and duplicate entries.
+    """
+    Reduces possibilities within rows according to the presence of values in rows.
+    Tests for over-reduction (an entry reduced to an empty list), and duplicate entries.
+    """
 
     distinct = True
     result = [[[0]*9 for i in range(9)] for j in range(9)]
@@ -56,7 +61,6 @@ def row_reducer(matrix):
         # Test for zero-length entries.
 
         len_vector = [len(row[x]) for x in range(9)]
-
         if min(len_vector) == 0:
             distinct = False
             return distinct, matrix
@@ -70,35 +74,31 @@ def row_reducer(matrix):
         dup_test = any(bool_dups)
         if dup_test == True:
             distinct = False
-            print "distinct false because dups"
             return distinct, matrix
             break
 
-
         result[row_index] = row
-
-    if sum_list_lengths(matrix) - sum_list_lengths(result) == 0:
-        print "no improvement"
-    print "result"
 
     if distinct == True:
         return distinct, result
     else:
         return distinct, matrix
 
-
-
 def column_reducer(matrix):
-    # Reduces the possibilities within columns according to the presence of values in columns.
+    """
+    Reduces the possibilities within columns according to the presence of values in columns.
+    """
 
+    # Obtain the transpose of matrix, in order to work on rows:
     result = [[row[i] for row in matrix] for i in range(9)]
 
-    # reduce possibilities in the transpose using row_worker
+    # Reduce possibilities in the transpose using row_worker:
     distinct, result = row_reducer(result)
 
-    # Take the transpose again to produce a correct result.
+    # Take the transpose again to change rows to columns.
     result = [[row[i] for row in result] for i in range(9)]
 
+    # A value of distinct = False means a problem with the current entry hypothesis
     if distinct == True:
         return distinct, result
     else:
@@ -107,10 +107,12 @@ def column_reducer(matrix):
 
 
 def sub_reducer(matrix):
-    # Reduces possibilities in 3x3 sub-matrices according to presence of values in sub-matrices.
-
+    """
+    Reduces possibilities in 3x3 sub-matrices according to presence of values in sub-matrices.
+    """
     mid_result = [[[0]*9 for i in range(9)] for j in range(9)]
 
+    # Convert the nine 3x3 sub-matrices to rows, to allow row reduction:
     for k in range(9):
         jlower = 3*(k % 3)
         jupper = jlower + 3
@@ -123,10 +125,12 @@ def sub_reducer(matrix):
         mid_result[k] = [matrix[i][j] for i in i_range for j in j_range]
 
     distinct, mid_result = row_reducer(mid_result)
+
+    # A value of distinct = False means a problem with the current entry hypothesis
     if distinct == False:
         return distinct, matrix
 
-    # convert result back to format of sudoku - each row to correct 3x3 submatrix
+    # Convert result back to format of sudoku - each row to correct 3x3 submatrix
     result = [[[0]*9 for i in range(9)] for j in range(9)]
     for n in range(9):
         xlower = 3*(n // 3)
@@ -137,6 +141,7 @@ def sub_reducer(matrix):
         y_range = range(ylower, yupper)
         result[n] = [mid_result[x][y] for x in x_range for y in y_range]
 
+    # A value of distinct = False means a problem with the current entry hypothesis
     if distinct == True:
         return distinct, result
     else:
@@ -144,9 +149,11 @@ def sub_reducer(matrix):
 
 
 def endgame(work_list, path):
-    # This function is only called if the sudoku is down to single entries
-    # in all slots, i.e. if the sum_list_lengths is 81.
-    # Writes the solution to a .csv file.
+    """
+    This function is only called if the sudoku is down to single entries
+    in all slots, i.e. if the sum_list_lengths is 81.
+    Writes the solution to a .csv file.
+    """
     if sum_list_lengths(work_list) == 81:
         flattened_work_list = [[int(row[i][0]) for i in range(len(row))] for row in work_list]
         with open(path, "wb") as csv_file:
@@ -158,7 +165,9 @@ def endgame(work_list, path):
 
 
 def solver(matrix):
-    # Runs basic row/column/sub9 reduction until no there is no improvement.
+    """
+    Runs basic row/column/sub9 reduction until no there is no improvement.
+    """
     improved = 1
     iterations = 0
     distinct = True
@@ -168,81 +177,78 @@ def solver(matrix):
 
         distinct, matrix = row_reducer(matrix)
         if distinct == False:
-            print "distinct", distinct
             return distinct, go_back
         distinct, matrix = column_reducer(matrix)
         if distinct == False:
-            print "distinct", distinct
             return distinct, go_back
         distinct, matrix = sub_reducer(matrix)
         if distinct == False:
-            print "distinct", distinct
             return distinct, go_back
         iterations += 1
-        print "iterations =", iterations
+        # If too many iterations occur, there could be a problem.
         if iterations > 20:
             break
 
+        # Test to see if the matrix has been reduced:
         elif tester - sum_list_lengths(matrix) == 0:
             improved = 0
 
     return distinct, matrix
 
 def hypothesis(matrix):
-
+    """
+    Solves sudoku puzzles by setting a value and testing
+    for success or failure.
+    """
+    # First make sure the matrix needs more work.
     sum_ll = sum_list_lengths(matrix)
     if sum_ll == 81:
         success = True
         return success, matrix
 
-    # find first list of length > 1:
+    # Find first list of length > 1:
 
     first_occ = [(i, j) for i in range(9) for j in range(9) if len(matrix[i][j]) > 1][0]
     first_x = first_occ[0]
     first_y = first_occ[1]
     replacement = matrix[first_x][first_y]
     test_mx = matrix
-    # for each element in the replacement list, see what leads to an error and remove it.
+    # For each element in the replacement list, see what leads to an error and remove it.
     take_out = 0
     for k in replacement:
 
         new_replacement = replacement
         test_mx[first_x][first_y] = [k]
         distinct, result = solver(test_mx)
+        # If distinct has a value False there is over-reduction or duplicate entries.
+        # This means that k is a bad hypothesis.
         if distinct == False:
             take_out = k
             break
 
         else:
+            # Keep going with this hypothesis until success or failure:
             success, test_mx = hypothesis(test_mx)
             return success, test_mx
 
+    # If there was a bad hypothesis, this code removes it from consideration and
+    # marches forward with a reduced sudoku matrix, until there is success or failure.
     new_replacement.remove(take_out)
     matrix[first_x][first_y] = new_replacement
-    print "new replacement", new_replacement
-    print "new matrix", matrix
     success, matrix = hypothesis(matrix)
     return success, matrix
 
-
-
-
-
 if __name__ == '__main__':
+    """
+    Main sudoku solver program.
+    """
     inputFile = sys.argv[1]
     dataMatrix = read_csv_file(inputFile)
     dataMatrix = zero_worker(dataMatrix)
     distinct, dataMatrix = solver(dataMatrix)
-    print "dataMatrix after basic", dataMatrix
     if sum_list_lengths(dataMatrix) > 81:
         success, dataMatrix = hypothesis(dataMatrix)
     if sum_list_lengths(dataMatrix) == 81:
         outputFile = sys.argv[2]
         game_end = endgame(dataMatrix, outputFile)
 
-
-
-
-
-
-    print dataMatrix
