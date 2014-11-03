@@ -25,7 +25,9 @@ If the sudoku is unsolved after the first pass, the hypothesis function carries 
 
 If the hypothesis is neither a clear solution nor a failure, hypothesis calls itself and keeps going until there is a solution or failure. 
 
-This program works on easy and medium difficulty sudoku puzzles. It was not able to solve a difficult sudoku puzzle. 
+This program works on easy up to fairly difficult sudoku puzzles. 
+
+There are several puzzles to try in this repo: sudoku_data.csv is easy, sudo101.csv is medium, and sudo162.csv fairly hard. 
 
 
 
