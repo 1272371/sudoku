@@ -17,7 +17,7 @@ My program uses the first method, and if no solution can be found, invokes the s
 
 The program reads in a .csv file with 9 rows and 9 columns, with zeros representing blank entries. The output, if there are no errors, is a .csv file with blank entries filled in. 
 
-The sudoku matrix is stored as a matrix of lists. Filled entries have lists with only one component. Blank entries have longer lists containing all possibilities that have not been ruled out yet. Because the entries are lists, it is easy to tell if a matrix is fully reduced (solved): all of its lists are length one, and the sum of all lengths would be 81. That is the "id done?" test used throughout. 
+The sudoku matrix is stored as a matrix of lists. Filled entries have lists with only one component. Blank entries have longer lists containing all possibilities that have not been ruled out yet. Because the entries are lists, it is easy to tell if a matrix is fully reduced (solved): all of its lists have length one, and the sum of all lengths is 81. That is the "is done?" test used throughout. 
 
 The program uses functional programming style. I chose that style over object-oriented just because I'm a little more comfortable with it - I'm relatively new to Python. The program employs the two algorithms mentioned in the Background section: row/column/sub9 reduction and hypothesis testing. As a first pass, it tries row/column/sub9 reduction, making sure to keep row/column/sub9 values distinct. If that works, the program ends. 
 
