@@ -21,7 +21,7 @@ The sudoku matrix is stored as a matrix of lists. Filled entries have lists with
 
 The program uses functional programming style. I chose that style over object-oriented just because I'm a little more comfortable with it - I'm relatively new to Python. The program employs the two algorithms mentioned in the Background section: row/column/sub9 reduction and hypothesis testing. As a first pass, it tries row/column/sub9 reduction, making sure to keep row/column/sub9 values distinct. If that works, the program ends. 
 
-If the sudoku is unsolved after the first pass, the hypothesis function carries out hypothesis testing. It looks for the first instance of an unreduced list, and tests reducing it to its first element. If a solution results, the program ends. If the hypothesis is bad and results in over-reduction (lists of length zero) or duplicated entries, the hypothesis is removed and then hypothesis calls itself on the reduced sudoku matrix. 
+If the sudoku is unsolved after the first pass, the hypothesis function carries out hypothesis testing. It looks for the first instance of an unreduced list, and tests reducing it to its first element. If a solution results, the program ends. If the hypothesis is bad and results in over-reduction (lists of length zero) or duplicated entries, the bad hypothesis is removed and the hypothesis function calls itself on the reduced sudoku matrix. 
 
 If the hypothesis is neither a clear solution nor a failure, hypothesis calls itself and keeps going until there is a solution or failure. 
 
