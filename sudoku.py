@@ -13,7 +13,7 @@ def read_csv_file(filename):
         csvReader = csv.reader(fileHandle, delimiter=',', quotechar='"')
         for row in csvReader:
             matrix.append(row)
-    matrix = [[int(row[i]) for i in range(len(row))] for row in matrix]
+    matrix = [[int(elem) for elem in row] for row in matrix]
     return matrix
 
 def sum_list_lengths(matrix):
@@ -21,11 +21,9 @@ def sum_list_lengths(matrix):
     Computes the sum of the lengths of the 81 lists in the
     working sudoku. If the length is 81, all lists are length 1.
     """
-    a = [[len(row[i]) for i in range(9)]for row in matrix]
-    sumcollect = 0
-    for i in range(9):
-        test = sum(a[i])
-        sumcollect = sumcollect + test
+    a = [[len(elem) for elem in row]for row in matrix]
+    sumcollect = sum(sum(row) for row in a)
+
     return sumcollect
 
 
@@ -34,7 +32,7 @@ def zero_worker(work_list):
     Converts zero entries in initial sudoku matrix to lists of
     possibilities, from 1 through 9.
     """
-    result = [[row[i]] if row[i] != 0 else range(1, 10) for row in work_list for i in range(9)]
+    result = [[elem] if elem != 0 else range(1, 10) for row in work_list for elem in row]
     result = [result[9*x:9*x + 9] for x in range(9)]
     if sum_list_lengths(result) > 81:
         return result
@@ -52,22 +50,25 @@ def row_reducer(matrix):
     result = [[[0]*9 for i in range(9)] for j in range(9)]
     for row in matrix:
         row_index = matrix.index(row)
+        # anti_vector is the set of existing fully reduced values in the row.
         anti_vector = [row[x][0] for x in range(9) if len(row[x]) == 1]
 
+        # replacer is the complement of anti_vector in the set 1 through 9.
         replacer = list(set(range(1, 10)) - set(anti_vector))
 
-        row = [row[x] if len(row[x]) == 1 else list(set(row[x]) & set(replacer)) for x in range(9)]
+        # Replace non-unit-length lists with the intersection of list and replacer:
+        row = [elem if len(elem) == 1 else list(set(elem) & set(replacer)) for elem in row]
 
         # Test for zero-length entries.
 
-        len_vector = [len(row[x]) for x in range(9)]
+        len_vector = [len(elem) for elem in row]
         if min(len_vector) == 0:
             distinct = False
             return distinct, matrix
             break
 
         # Test for duplicate entries.
-        units_vector = [row[n][0] for n in range(9) if len(row[n]) == 1]
+        units_vector = [elem[0] for elem in row if len(elem) == 1]
         units_range = len(units_vector)
         bool_dups = [units_vector[i]==units_vector[j] for i in range(units_range) for j in range(units_range) if i != j]
 
@@ -155,7 +156,7 @@ def endgame(work_list, path):
     Writes the solution to a .csv file.
     """
     if sum_list_lengths(work_list) == 81:
-        flattened_work_list = [[int(row[i][0]) for i in range(len(row))] for row in work_list]
+        flattened_work_list = [[int(elem[0]) for elem in row] for row in work_list]
         with open(path, "wb") as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             for row in flattened_work_list:
