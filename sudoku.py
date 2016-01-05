@@ -6,20 +6,26 @@ import csv
 def read_csv_file(filename):
     """
     Reads in unsolved sudoku from .csv file.
-    Formats the entries as a 9x9 matrix of lists.
+    Formats the entries as a 9x9 matrix - a list of lists.
     """
     matrix = []
     with file(filename, 'U') as fileHandle:
         csvReader = csv.reader(fileHandle, delimiter=',', quotechar='"')
         for row in csvReader:
             matrix.append(row)
-    matrix = [[int(elem) for elem in row] for row in matrix]
+    matrix = [[int(elem) for elem in row] for row in matrix] #convert input string to int
     return matrix
 
 def sum_list_lengths(matrix):
     """
-    Computes the sum of the lengths of the 81 lists in the
-    working sudoku. If the length is 81, all lists are length 1.
+    Each entry in the unsolved sudoku is a list of possibilities.
+    There are 81 lists in all. When the length of each list is
+    whittled down to 1, the puzzle is solved. This function
+    computes the sum of the lengths of the 81 lists in the
+    working sudoku. 
+    If the sum is = 81, all lists are length 1 and the puzzle is solved. 
+    If the sum is > 81, the puzzle is unsolved. 
+    If the sum is < 81, the puzzle is improperly formatted. 
     """
     a = [[len(elem) for elem in row]for row in matrix]
     sumcollect = sum(sum(row) for row in a)
@@ -29,7 +35,8 @@ def sum_list_lengths(matrix):
 
 def zero_worker(work_list):
     """
-    Converts zero entries in initial sudoku matrix to lists of
+    The zero entries in the unsolved sudoku input stand for 
+    unknowns. This function converts zero entries to lists of
     possibilities, from 1 through 9.
     """
     result = [[elem] if elem != 0 else range(1, 10) for row in work_list for elem in row]
